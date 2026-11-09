@@ -38,8 +38,6 @@ show how much they mattered.
 - [`modeling_4.ipynb`](modeling_4.ipynb): cleaning, baselines, logistic regression, naive Bayes and random forest
   with grid search, the effect of the shortcuts, BERT, model comparison, error analysis and the most important
   words.
-- [`FakeNewsClassification.pdf`](FakeNewsClassification.pdf): presentation of the first version of the project
-  (before the shortcuts were removed).
 
 ## Method
 
