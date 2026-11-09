@@ -1,142 +1,70 @@
-# Fake News Detection Project
+# Fake News Detection
 
-A machine learning project that uses natural language processing and deep learning techniques to automatically classify news articles as real or fake. The project implements multiple models, from simple baselines to advanced BERT-based deep learning approaches.
-
-## Project Overview
-
-This project addresses the challenge of detecting fake news by:
-- Using multiple ML/DL approaches to classify news articles
-- Comparing different model architectures and their performance
-- Providing detailed analysis of feature importance and error patterns
-- Implementing both quick-to-deploy and high-accuracy solutions
-
-## Features
-
-- Multiple model implementations:
-  - Baseline models (majority, title length, subject-based)
-  - Traditional ML models (Logistic Regression, Naive Bayes, Random Forest)
-  - BERT-based deep learning model
-- Comprehensive text preprocessing pipeline
-- Feature engineering including stylometric analysis
-- Detailed performance analysis and visualization
-- Error analysis and feature importance evaluation
-
-## Requirements
-
-```
-pandas
-numpy
-matplotlib
-seaborn
-scikit-learn
-torch
-pytorch-lightning
-transformers
-textblob
-nltk
-tqdm
-```
-
-## Project Structure
-
-```
-├── data/
-│   ├── Fake.csv
-│   └── True.csv
-├── notebooks/
-│   ├── 1_EDA.ipynb
-│   └── 2_Model_Development.ipynb
-```
-
-## Model Performance
-
-Our models achieved the following performance metrics:
-
-- BERT: Best accuracy with nuanced understanding of context
-- Logistic Regression: Strong performance with quick training
-- Random Forest: Good balance of accuracy and interpretability
-- Naive Bayes: Fast training with competitive results
-
-## Key Features Used
-
-1. Text-based features:
-   - TF-IDF vectors
-   - Count vectors
-   - Clean text and titles
-
-2. Stylometric features:
-   - Average word length
-   - Punctuation patterns
-   - Uppercase ratio
-   - Sentiment scores
-
-3. Metadata features:
-   - Article length
-   - Title length
-   - Subject category
-
-## Usage
-
-1. Data Preparation:
-```python
-# Load and preprocess data
-fake_df = pd.read_csv('data/Fake.csv')
-true_df = pd.read_csv('data/True.csv')
-fake_df['label'] = 0  # 0 for fake
-true_df['label'] = 1  # 1 for true
-df = pd.concat([fake_df, true_df], ignore_index=True)
-```
-
-2. Training a Model:
-```python
-# Example using Logistic Regression
-from sklearn.linear_model import LogisticRegression
-model = LogisticRegression(random_state=42)
-grid = GridSearchCV(model, params, cv=3, scoring='accuracy')
-grid.fit(X_train, y_train)
-```
-
-3. Using BERT Model:
-```python
-# Initialize and train BERT model
-bert_model = FakeNewsClassifier()
-trainer = pl.Trainer(max_epochs=5, accelerator='auto')
-trainer.fit(bert_model, train_loader, val_loader)
-```
+Classifying news articles from the ISOT Fake News dataset as real or fake, from simple baselines to TF-IDF models
+and a fine-tuned BERT model, with a close look at what the models actually learn.
 
 ## Results
 
-The project achieved strong classification performance:
-- High accuracy across different model types
-- Robust performance across different news categories
-- Effective identification of fake news patterns
+Accuracy on a held-out test set of 7,716 articles, after removing source traces and duplicates (see below):
 
-Key findings:
-- Title length is a strong predictor
-- Certain keywords consistently indicate fake news
-- Stylometric features provide additional signal
-- BERT captures subtle contextual nuances
+| Model | Accuracy | Macro F1 | ROC AUC |
+|---|---:|---:|---:|
+| BERT (`bert-base-uncased`, fine-tuned) | **0.998** | 0.998 | 1.000 |
+| Logistic regression (TF-IDF + style features) | 0.997 | 0.997 | 1.000 |
+| Random forest (TF-IDF + style features) | 0.995 | 0.995 | 1.000 |
+| Naive Bayes (word counts + style features) | 0.941 | 0.940 | 0.975 |
+| Title length rule | 0.831 | 0.826 | 0.878 |
+| Always predict the majority class | 0.549 | 0.355 | – |
 
-## Future Improvements
+## What the models really learn
 
-1. Data Enhancement:
-   - Collect more diverse training data
-   - Add source credibility metrics
-   - Implement temporal validation
+The near-perfect scores mostly measure **which source an article comes from, not whether it is true.** All real
+articles in ISOT come from Reuters and all fake ones from a few websites, and each has its own house style:
 
-2. Model Improvements:
-   - Implement ensemble methods
-   - Add more stylometric features
-   - Incorporate source reliability metrics
+- The `subject` categories of real and fake articles do not overlap, so the subject alone gives 100 % accuracy.
+- 99 % of real articles start with a "CITY (Reuters) -" dateline; fake ones carry image credits, links and
+  Twitter handles from their websites; and thousands of texts are duplicates.
+- These traces are removed before modelling, but a text-only model still drops only from 99.6 % to 98.7 %, and
+  titles alone give 95.2 %. The strongest remaining features are style habits: Reuters writes "said", names the
+  weekday and gives times in EDT, while the fake sites write headlines in Title Case and advertise their own shows.
 
-3. System Enhancements:
-   - Add real-time processing capabilities
-   - Implement API endpoints
-   - Create user interface
+A model trained on this data is therefore unlikely to work on fake news from other sources. An earlier version of
+this project trained on the uncleaned data and reported 99.9 % accuracy; the notebooks now remove the shortcuts and
+show how much they mattered.
 
-## Contributing
+## Notebooks
 
-Feel free to submit issues, fork the repository, and create pull requests for any improvements.
+- [`EDA.ipynb`](EDA.ipynb): class balance, subjects, title and text lengths, source traces and duplicates.
+- [`modeling_4.ipynb`](modeling_4.ipynb): cleaning, baselines, logistic regression, naive Bayes and random forest
+  with grid search, the effect of the shortcuts, BERT, model comparison, error analysis and the most important
+  words.
+- [`FakeNewsClassification.pdf`](FakeNewsClassification.pdf): presentation of the first version of the project
+  (before the shortcuts were removed).
+
+## Method
+
+1. **Cleaning:** remove the Reuters dateline and publisher markers (URLs, Twitter links and handles, image credits,
+   site names), drop empty and duplicate texts, and leave out `subject` and `date`. 38,579 of 44,898 articles remain.
+2. **Split:** one stratified 80/20 train/test split; everything is fitted on the training set only.
+3. **Features:** lemmatised titles and texts (TF-IDF or counts) plus style features: average word length,
+   punctuation, share of capital letters and sentiment for the title and the text.
+4. **Models:** logistic regression, naive Bayes and random forest tuned with 3-fold grid search; BERT fine-tuned for
+   up to 2 epochs with early stopping on a validation split.
+
+## Run it
+
+1. Download the dataset from the
+   [ISOT Fake News Dataset page](https://onlineacademiccommunity.uvic.ca/isot/2022/11/27/fake-news-detection-datasets/)
+   (University of Victoria) and put `Fake.csv` and `True.csv` in a `data/` folder.
+2. `pip install -r requirements.txt`
+3. Run `EDA.ipynb`, then `modeling_4.ipynb`. The modelling notebook takes about 15 minutes with a GPU (BERT
+   fine-tuning); without one, BERT is much slower.
+
+## Next steps
+
+- Test the models on a different fake-news dataset to measure how much of the accuracy is source style.
+- Use data where real and fake articles come from similar outlets, or claim-level fact-checking data such as LIAR.
+- Add temporal validation: train on older articles and test on newer ones.
 
 ## License
 

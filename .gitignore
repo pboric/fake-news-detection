@@ -12,3 +12,6 @@ venv/
 .DS_Store
 .vscode/
 .idea/
+
+# Data (download from the ISOT page, see README)
+data/
