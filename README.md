@@ -35,7 +35,7 @@ show how much they mattered.
 ## Notebooks
 
 - [`EDA.ipynb`](EDA.ipynb): class balance, subjects, title and text lengths, source traces and duplicates.
-- [`modeling_4.ipynb`](modeling_4.ipynb): cleaning, baselines, logistic regression, naive Bayes and random forest
+- [`modeling.ipynb`](modeling.ipynb): cleaning, baselines, logistic regression, naive Bayes and random forest
   with grid search, the effect of the shortcuts, BERT, model comparison, error analysis and the most important
   words.
 
@@ -55,7 +55,7 @@ show how much they mattered.
    [ISOT Fake News Dataset page](https://onlineacademiccommunity.uvic.ca/isot/2022/11/27/fake-news-detection-datasets/)
    (University of Victoria) and put `Fake.csv` and `True.csv` in a `data/` folder.
 2. `pip install -r requirements.txt`
-3. Run `EDA.ipynb`, then `modeling_4.ipynb`. The modelling notebook takes about 15 minutes with a GPU (BERT
+3. Run `EDA.ipynb`, then `modeling.ipynb`. The modelling notebook takes about 15 minutes with a GPU (BERT
    fine-tuning); without one, BERT is much slower.
 
 ## Next steps
